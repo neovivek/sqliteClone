@@ -1,6 +1,11 @@
 package com.company;
 
 public class MetaCommand {
+    static Logger logger;
+
+    static {
+        logger = new Logger();
+    }
 
     enum MetaCommandType {
         META_COMMAND_EXIT(".exit", "Exit command"),
@@ -35,7 +40,7 @@ public class MetaCommand {
         if (command.equalsIgnoreCase(MetaCommandType.META_COMMAND_EXIT.getCommand())) {
             System.exit(0);
         } else {
-
+            logger.printErrorMessage(MetaCommandType.META_COMMAND_UNREOGNIZED_COMMAND.getDescription() + " " + command);
         }
     }
 }

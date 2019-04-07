@@ -5,12 +5,19 @@ import java.util.Scanner;
 class Repl {
     private static Repl instance = null;
     private static Scanner scanner;
+    private static Logger logger;
+
+    private MetaCommand metaCommand;
+    private PrepareStatement prepareStatement;
 
     static {
         scanner = new Scanner(System.in);
+        logger = new Logger();
     }
 
     private Repl() {
+        this.metaCommand = new MetaCommand();
+        this.prepareStatement = new PrepareStatement();
     }
 
     /**
@@ -31,12 +38,18 @@ class Repl {
     void run() {
         this.printWelcomePrompt();
         while (true) {
-            this.printPrompt();
+            logger.printPrompt();
             String command = this.readCommands();
-            if (command.equals(".exit")) {
-                break;
+            if (command.isEmpty()) {
+                continue;
+            }
+            if (command.substring(0, 1).equals(".")) {
+                this.metaCommand.process(command);
             } else {
-                System.out.println("Invalid transaction request");
+                Statement statement = new Statement();
+                this.prepareStatement.process(command, statement);
+                String result = statement.execute();
+                logger.printErrorMessage(result);
             }
         }
     }
@@ -44,17 +57,10 @@ class Repl {
     /**
      * Welcome message printer
      */
-    private void printWelcomePrompt(){
+    private void printWelcomePrompt() {
         System.out.println("Welcome to Malasite db");
         System.out.println("Enter sql commands to be executed in each line");
         System.out.println("Enter .exit to exit the application");
-    }
-
-    /**
-     * Method to print prompt to the command line
-     */
-    private void printPrompt() {
-        System.out.print("db > ");
     }
 
     /**
@@ -64,8 +70,8 @@ class Repl {
      */
     private String readCommands() {
         String command = scanner.nextLine();
-        while (command.isEmpty()) {
-            this.printPrompt();
+        if (command.isEmpty()) {
+            logger.printErrorMessage("Empty request received");
         }
         return command;
     }
